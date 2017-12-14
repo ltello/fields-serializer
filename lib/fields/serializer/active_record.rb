@@ -18,17 +18,17 @@ module Fields
           end.map(&:presence).compact
         end
 
-        private
-
-        def association?(key)
-          reflections.keys.include?(key)
-        end
-
         def nested_field(attribute_stack)
           parent = attribute_stack.first
           return unless association?(parent)
           parent_klass = reflections[parent].class_name.constantize
           { parent => parent_klass.nested_field(attribute_stack[1..-1]) }.compact.presence || parent
+        end
+
+        private
+
+        def association?(key)
+          reflections.keys.include?(key)
         end
       end
     end
