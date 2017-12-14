@@ -6,6 +6,13 @@ module Fields
       extend ActiveSupport::Concern
 
       class_methods do
+        # Convert a list of fields (json_api notation) in a list of associations to be
+        # added to a ActiveRecord Model.includes call
+        #
+        # Example:
+        #
+        #  BoilerPack.fields_to_includes("id,boiler.gas_safe_code") #=> ["boiler"]
+        #
         def fields_to_includes(fields)
           flatten_fields = Array(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten
           nested_fields  = flatten_fields.map { |field| nested_field(field.split(".")) }.compact
