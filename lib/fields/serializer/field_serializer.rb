@@ -4,15 +4,16 @@ require "active_model_serializers"
 # It can be used with any model but does not currently support associations.
 #
 # Example usage:
-#   `render json: @region, serializer: FieldSerializer, fields: [:id, :title]`
+#   render json: @region, serializer: FieldSerializer, fields: [:id, :title]
 #
 #   > { "id": "5f19582d-ee28-4e89-9e3a-edc42a8b59e5", "title": "London" }
-
+#
 class FieldSerializer < ActiveModel::Serializer
   def attributes(*args)
+    fields = Array(args.first).map { |str| str.to_s.split(",").map(&:strip) }.flatten
     adding_id do
       merging_attributes do
-        args.first.map { |field| create_attribute_structure(field.split("."), object) }
+        fields.map { |field| create_attribute_structure(field.split("."), object) }
       end
     end
   end
