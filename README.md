@@ -22,7 +22,25 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Use example in your controller:
+
+```ruby
+class OrdersController < ApplicationController
+  def index
+    orders = Order.all
+    render_json_fields(orders, model_class: Order, fields: ["short_id", "customer.first_name", "customer.surname", "customer.address.postcode"], root: "orders")
+  end
+end
+
+```
+
+If `:model_class` and `:fields` options are included, it will optimize the query to the db using `.includes` based
+on the model_class associations found in `:fields` value. Also, will render only the fields in `:fields` option.
+
+If no :model_class and `:fields` options are provided, it will render the whole objects using the appropriate model
+serializer.
+
+You can also provide any other options accepted by common `render` method.
 
 ## Development
 
