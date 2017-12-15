@@ -19,10 +19,10 @@ module Fields
           nested_fields.inject([{}]) do |result, attribute_structure|
             if attribute_structure.is_a?(Hash)
               result.first.deep_merge!(attribute_structure) { |_, u, v| u == v ? u : [u, v] }
-              result
             else
-              result << attribute_structure
+              result << attribute_structure unless result.first.dig(attribute_structure) || result.include?(attribute_structure)
             end
+            result
           end.map(&:presence).compact
         end
 
