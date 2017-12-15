@@ -25,6 +25,7 @@ class FieldSerializer < ActiveModel::Serializer
   end
 
   def create_attribute_structure(attribute_stack, model)
+    return unless model
     parent = attribute_stack.shift
     if attribute_stack.count > 0
       nested_model = model.send(parent)
