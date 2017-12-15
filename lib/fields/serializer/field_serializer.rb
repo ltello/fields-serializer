@@ -25,17 +25,32 @@ class FieldSerializer < ActiveModel::Serializer
   end
 
   def create_attribute_structure(attribute_stack, model)
-    return unless model
+    return model unless model.present?
     parent = attribute_stack.shift
     if attribute_stack.count > 0
-      nested_model = model.send(parent)
-      { parent => create_attribute_structure(attribute_stack, nested_model) }
+      if model.kind_of?(Array)
+        collection_attribute_structure(model, attribute_stack, parent)
+      else
+        attribute_structure(model, attribute_stack, parent)
+      end
     else
-      { parent => model.send(parent) }
+      value_structure(model, parent)
     end
+  end
+
+  def attribute_structure(model, attribute_stack, parent)
+    { parent => create_attribute_structure(attribute_stack, model.send(parent)) }
+  end
+
+  def collection_attribute_structure(models, attribute_stack, parent)
+    models.map { |model| attribute_structure(model, attribute_stack, parent) }
   end
 
   def merging_attributes(&block)
     block.call.inject(:deep_merge!)
+  end
+
+  def value_structure(model, attribute_name)
+    { attribute_name => model.send(attribute_name) }
   end
 end
