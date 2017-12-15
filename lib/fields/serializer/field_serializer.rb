@@ -26,15 +26,15 @@ class FieldSerializer < ActiveModel::Serializer
 
   def create_attribute_structure(attribute_stack, model)
     return model unless model.present?
-    parent = attribute_stack.shift
-    if attribute_stack.count > 0
-      if model.kind_of?(Array)
-        collection_attribute_structure(model, attribute_stack, parent)
-      else
-        attribute_structure(model, attribute_stack, parent)
-      end
+    if model.kind_of?(ActiveRecord::Relation)
+      collection_attribute_structure(model, attribute_stack)
     else
-      value_structure(model, parent)
+      parent = attribute_stack.first
+      if attribute_stack.count > 1
+        attribute_structure(model, attribute_stack[1..-1], parent)
+      else
+        value_structure(model, parent)
+      end
     end
   end
 
@@ -42,8 +42,8 @@ class FieldSerializer < ActiveModel::Serializer
     { parent => create_attribute_structure(attribute_stack, model.send(parent)) }
   end
 
-  def collection_attribute_structure(models, attribute_stack, parent)
-    models.map { |model| attribute_structure(model, attribute_stack, parent) }
+  def collection_attribute_structure(models, attribute_stack)
+    models.map { |model| create_attribute_structure(attribute_stack, model) }.compact
   end
 
   def merging_attributes(&block)
