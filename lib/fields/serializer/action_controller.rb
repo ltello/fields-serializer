@@ -19,6 +19,7 @@ module Fields
         if fields
           query = query.includes(*model_class.fields_to_includes(fields))
           options.merge!(each_serializer: FieldSerializer, fields: Array(fields))
+          options.delete(:include)
         end
         render options.merge!(json: query.to_a)
       end
