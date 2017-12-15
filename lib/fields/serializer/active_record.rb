@@ -18,7 +18,8 @@ module Fields
           nested_fields  = flatten_fields.map { |field| nested_field(field.split(".")) }.compact
           nested_fields.inject([{}]) do |result, attribute_structure|
             if attribute_structure.is_a?(Hash)
-              result.first.deep_merge!(attribute_structure) { |_, u, v| [u, v] } && result
+              result.first.deep_merge!(attribute_structure) { |_, u, v| u == v ? u : [u, v] }
+              result
             else
               result << attribute_structure
             end
