@@ -14,9 +14,7 @@ module Fields
         #  BoilerPack.fields_to_includes("id,boiler.gas_safe_code") #=> ["boiler"]
         #
         def fields_to_includes(fields)
-          flatten_fields = Array(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten
-          nested_fields  = flatten_fields.map { |field| nested_field(field.split(".")) }.compact
-          nested_fields.inject([{}]) do |result, attribute_structure|
+          nested_fields(fields).inject([{}]) do |result, attribute_structure|
             if attribute_structure.is_a?(Hash)
               result.first.deep_merge!(attribute_structure) { |_, u, v| u == v ? u : [u, v] }
             else
@@ -35,8 +33,16 @@ module Fields
 
         private
 
+        def array_fields(fields)
+          Array(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten
+        end
+
         def association?(key)
           reflections.keys.include?(key)
+        end
+
+        def nested_fields(fields)
+          array_fields(fields).map { |field| nested_field(field.split(".")) }.compact.uniq
         end
       end
     end
