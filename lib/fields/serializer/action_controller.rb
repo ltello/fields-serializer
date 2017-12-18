@@ -16,7 +16,7 @@ module Fields
       def render_json_fields(query, **options)
         fields      = options.delete(:fields)
         model_class = options.delete(:model_class)
-        if fields
+        if fields.present?
           query = query.includes(*model_class.fields_to_includes(fields))
           options.merge!(each_serializer: FieldSerializer, fields: Array(fields))
           options.delete(:include)
