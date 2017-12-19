@@ -24,6 +24,23 @@ module Fields
           end.map(&:presence).compact
         end
 
+        # Convert a list of fields (json_api notation) in a list of associations to be
+        # added to a ActiveRecord Model.includes call
+        #
+        # Example:
+        #
+        #  BoilerPack.fields_to_includes("id,boiler.gas_safe_code") #=> ["boiler"]
+        #
+        def fields_to_include(fields, root: nil)
+          Array(fields).map do |field|
+            if field.kind_of?(Hash) || field.kind_of?(Array)
+              field.map { |k, v| fields_to_include(v, root: composite_field(root, k)) }
+            else
+              composite_field(root, field)
+            end
+          end.flatten
+        end
+
         def nested_field(attribute_stack)
           parent = attribute_stack.first
           return unless association?(parent)
@@ -39,6 +56,10 @@ module Fields
 
         def association?(key)
           reflections.keys.include?(key)
+        end
+
+        def composite_field(*values)
+          values.compact.join(".")
         end
 
         def nested_fields(fields)
