@@ -29,12 +29,14 @@ module Fields
 
         def create_serializer_class(fields)
           klass = self
-          Class.new(ActiveModel::Serializer).class_eval do
-            Array(fields).each do |field|
-              if field.kind_of?(Hash)
-                klass.send(:nested_association, field)
-              else
-                attribute field.to_sym unless klass.association?(field)
+          Class.new(ActiveModel::Serializer).tap do |new_class|
+            new_class.class_eval do
+              Array(fields).each do |field|
+                if field.kind_of?(Hash)
+                  klass.send(:nested_association, field)
+                else
+                  attribute field.to_sym unless klass.association?(field)
+                end
               end
             end
           end
