@@ -10,6 +10,7 @@ RSpec.describe Fields::Serializer do
   end
 
   it "extend models" do
+    expect(A).to respond_to(:association?)
     expect(A).to respond_to(:fields_to_includes)
     expect(A).to respond_to(:fields_serializer)
   end

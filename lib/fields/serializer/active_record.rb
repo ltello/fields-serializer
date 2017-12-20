@@ -7,6 +7,11 @@ module Fields
       extend ActiveSupport::Concern
 
       class_methods do
+  
+        def association?(key)
+          reflections.keys.include?(key)
+        end
+
         # Convert a list of fields (json_api notation) in a list of associations to be
         # added to a ActiveRecord Model.includes call
         #
@@ -57,10 +62,6 @@ module Fields
 
         def array_fields(fields)
           Array(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten.sort
-        end
-
-        def association?(key)
-          reflections.keys.include?(key)
         end
       end
     end
