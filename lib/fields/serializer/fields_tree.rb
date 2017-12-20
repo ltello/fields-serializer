@@ -14,6 +14,7 @@ module Fields
         @associations = {}
       end
       
+      # Self if any fields or associations. Nil otherwise
       def presence
         self if fields.present? || associations.present?
       end
@@ -27,13 +28,9 @@ module Fields
       #     #=> [:name, :surname, { subjects: [:title, { posts: [{ comments: :count }, :date] }], followers: :nickname }]
       #
       def merge!(join_field)
-        return self unless join_field.present?
+        return self if join_field.blank?
         parent, rest = join_field.to_s.split(".", 2)
-        if rest.blank?
-          fields << parent if !(existing_field?(parent) || association?(parent))
-        else
-          existing_association?(parent) ? associations[parent].merge!(rest) : add_association!(parent, rest)
-        end
+        rest.present? ? add_association!(parent, rest) : add_field!(parent)
         self
       end
       
@@ -43,14 +40,11 @@ module Fields
       #     #=> [:name, :surname, { subjects: [:title, { posts: :comments }], followers: :nickname }]
       #
       def notation
-        if fields.present?
-          if associations.present?
-            fields.dup << associations_to_notation
-          else
-            fields.one? ? fields.first.dup : fields.dup
-          end
+        return associations_to_notation.presence if fields.blank?
+        if associations.present?
+          fields.dup << associations_to_notation
         else
-          associations_to_notation.presence
+          fields.one? ? fields.first.dup : fields.dup
         end
       end
 
@@ -60,15 +54,12 @@ module Fields
       #     #=> [{ subjects: { posts: :comments }}, :followers]
       #
       def to_includes
-        to_includes = associations.inject([]) do |result, (k, v)|
-          v_includes = v.to_includes
-          if v_includes.present?
-            new_has_entry = { k => v_includes }
-            hash = result.find { |e| e.is_a?(Hash) }
-            hash ? hash.merge!(new_has_entry) : (result << new_has_entry)
-            result
+        to_includes = associations.inject([]) do |result, (association_name, association_tree)|
+          association_includes = association_tree.to_includes
+          if association_includes.present?
+            add_association_includes_to_includes!(result, association_name, association_includes)
           else
-            result << k
+            add_association_to_includes!(result, association_name)
           end
         end.presence
         Array.wrap(to_includes).one? ? to_includes.first : to_includes
@@ -81,12 +72,35 @@ module Fields
       private
       
       def add_association!(parent, rest)
+        existing_association?(parent) ? merge_association!(parent, rest) : append_association!(parent, rest)
+      end
+
+      def add_association_includes_to_includes!(includes, association_name, association_includes)
+        new_has_entry = { association_name => association_includes }
+        includes_hash = includes.find { |e| e.is_a?(Hash) }
+        includes_hash ? includes_hash.merge!(new_has_entry) : (includes << new_has_entry)
+        includes
+      end
+
+      def add_association_to_includes!(includes, association_name)
+        includes << association_name
+      end
+
+      def append_association!(parent, rest)
         if association?(parent)
           nested_class       = klass.reflections[parent].klass
           nested_fields_tree = FieldsTree.new(nested_class).merge!(rest).presence
           new_association    = { parent => nested_fields_tree } if nested_fields_tree
           associations.merge!(new_association) if new_association
         end
+      end
+
+      def add_field!(value)
+        fields << value if new_field?(value)
+      end
+
+      def association?(value)
+        klass.reflections.keys.include?(value)
       end
       
       def associations_to_notation
@@ -103,8 +117,12 @@ module Fields
         fields.include?(value)
       end
 
-      def association?(value)
-        klass.reflections.keys.include?(value)
+      def merge_association!(key, fields)
+        associations[key].merge!(fields)
+      end
+
+      def new_field?(value)
+        !existing_field?(value) && !association?(value)
       end
     end
   end
