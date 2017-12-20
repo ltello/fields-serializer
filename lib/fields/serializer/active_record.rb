@@ -32,7 +32,7 @@ module Fields
           Class.new(ActiveModel::Serializer) do
             Array(fields).each do |field|
               if field.kind_of?(Hash)
-                klass.nested_association(field)
+                klass.send(:nested_association, field)
               else
                 attribute field.to_sym unless klass.association?(field)
               end
