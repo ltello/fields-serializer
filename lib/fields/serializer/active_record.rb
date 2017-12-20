@@ -33,7 +33,10 @@ module Fields
             new_class.class_eval do
               Array(fields).each do |field|
                 if field.kind_of?(Hash)
-                  klass.send(:nested_association, field)
+                  field.each do |association_name, nested_fields|
+                    reflection = klass.reflections[association_name]
+                    send(reflection.macro, association_name.to_sym, serializer: reflection.klass.create_serializer_class(nested_fields))
+                  end
                 else
                   attribute field.to_sym unless klass.association?(field)
                 end
