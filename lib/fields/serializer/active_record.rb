@@ -23,12 +23,13 @@ module Fields
         end
 
         def create_serializer_class(fields)
+          klass = self
           Class.new(ActiveModel::Serializer) do
             Array(fields).each do |field|
               if field.kind_of?(Hash)
-                nested_association(field)
+                klass.nested_association(field)
               else
-                attribute field.to_sym unless association?(field)
+                attribute field.to_sym unless klass.association?(field)
               end
             end
           end

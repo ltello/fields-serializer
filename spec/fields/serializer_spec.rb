@@ -11,13 +11,14 @@ RSpec.describe Fields::Serializer do
 
   it "extend models" do
     expect(A).to respond_to(:fields_to_includes)
+    expect(A).to respond_to(:fields_serializer)
   end
 
   it "extend controllers" do
     expect(C.new).to respond_to(:render_json_fields)
   end
 
-  it "define FieldSerializer" do
-    expect(FieldSerializer.ancestors).to include(ActiveModel::Serializer)
+  it "define Fields::Serializer::FieldsTree" do
+    expect { Fields::Serializer::FieldsTree }.not_to raise_exception
   end
 end
