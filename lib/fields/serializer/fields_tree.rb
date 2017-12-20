@@ -52,7 +52,7 @@ module Fields
             result << k
           end
         end.presence
-        Array(to_includes).one? ? to_includes.first : to_includes
+        Array.wrap(to_includes).one? ? to_includes.first : to_includes
       end
       
       def to_s

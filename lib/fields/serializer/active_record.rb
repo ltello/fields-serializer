@@ -31,7 +31,7 @@ module Fields
           klass = self
           Class.new(ActiveModel::Serializer).tap do |new_class|
             new_class.class_eval do
-              Array(fields).each do |field|
+              Array.wrap(fields).each do |field|
                 if field.kind_of?(Hash)
                   field.each do |association_name, nested_fields|
                     reflection = klass.reflections[association_name]
@@ -66,7 +66,7 @@ module Fields
         end
 
         def array_fields(fields)
-          Array(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten.sort
+          Array.wrap(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten.sort
         end
       end
     end
