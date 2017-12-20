@@ -6,13 +6,12 @@ module Fields
       extend ActiveSupport::Concern
 
 
-      # Render the result of an ActiveRecord query including only the fields specified if any
-      #   or the whole serialized objects.
+      # Render the result of an ActiveRecord::Relation query including only the fields specified
       #
-      # @param  [ActiveRecord_Relation] query - The query to render in json
-      # @option options [Array] :fields       - The list of fields to return in json api syntax
-      # @option options [Class] :model_class  - The model class of the objects to be queried to optimize db hits.
-      # @option options [Hash]  :options      - Any other valid option to render method.
+      # @param  [ActiveRecord::Relation] query - The query to render in json
+      # @option options [Array] :fields        - The list of fields to return in json api syntax
+      # @option options [Class] :model_class   - The model class of the objects to be queried to optimize db hits.
+      # @option options [Hash]  :options       - Any other valid option to render method.
       def render_json_fields(query, **options)
         fields      = options.delete(:fields)
         model_class = options.delete(:model_class)
