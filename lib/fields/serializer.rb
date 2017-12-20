@@ -4,7 +4,7 @@ require 'active_support/concern'
 require "fields/serializer/version"
 require "fields/serializer/active_record"
 require "fields/serializer/action_controller"
-require "fields/serializer/field_serializer"
+require "fields/serializer/fields_tree"
 
 module Fields
   module Serializer

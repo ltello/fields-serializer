@@ -1,4 +1,5 @@
 require 'active_record'
+require "active_model_serializers"
 
 module Fields
   module Serializer
@@ -13,57 +14,52 @@ module Fields
         #
         #  BoilerPack.fields_to_includes("id,boiler.gas_safe_code") #=> ["boiler"]
         #
-        def fields_to_includes(fields)
-          nested_fields(fields).inject([{}]) do |result, attribute_structure|
-            if attribute_structure.is_a?(Hash)
-              result.first.deep_merge!(attribute_structure) { |_, u, v| u == v ? u : [u, v] }
-            else
-              result << attribute_structure unless result.first.dig(attribute_structure) || result.include?(attribute_structure)
-            end
-            result
-          end.map(&:presence).compact
+        def fields_to_includes(*fields)
+          fields_to_tree(fields).to_includes
         end
 
-        # Convert a list of fields (json_api notation) in a list of associations to be
-        # added to a ActiveRecord Model.includes call
-        #
-        # Example:
-        #
-        #  BoilerPack.fields_to_includes("id,boiler.gas_safe_code") #=> ["boiler"]
-        #
-        def fields_to_include(fields, root: nil)
-          Array(fields).map do |field|
-            if field.kind_of?(Hash) || field.kind_of?(Array)
-              field.map { |k, v| fields_to_include(v, root: composite_field(root, k)) }
-            else
-              composite_field(root, field)
-            end
-          end.flatten
+        def fields_serializer(*fields)
+          create_serializer_class(fields_to_tree(fields).notation)
         end
 
-        def nested_field(attribute_stack)
-          parent = attribute_stack.first
-          return unless association?(parent)
-          parent_klass = reflections[parent].class_name.constantize
-          { parent => parent_klass.nested_field(attribute_stack[1..-1]) }.compact.presence || parent
+        def create_serializer_class(fields)
+          Class.new(ActiveModel::Serializer) do
+            Array(fields).each do |field|
+              if field.kind_of?(Hash)
+                nested_association(field)
+              else
+                attribute field.to_sym unless association?(field)
+              end
+            end
+          end
         end
 
         private
 
+        def fields_to_tree(*fields)
+          array_fields(fields.flatten).inject(FieldsTree.new(self), &:merge!)
+        end
+
+        # Calls:
+        #   has_one :user, serializer: new_serializer_class_for_user_fields
+        #     or
+        #   belongs_to :user, serializer: new_serializer_class_for_user_fields
+        #     or
+        #   has_many :users, serializer: new_serializer_class_for_user_fields
+        #
+        def nested_association(fields)
+          fields.each do |association_name, nested_fields|
+            reflection = reflections[association_name]
+            send(reflection.macro, association_name.to_sym, serializer: reflection.klass.create_serializer_class(nested_fields))
+          end
+        end
+
         def array_fields(fields)
-          Array(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten
+          Array(fields).map { |str| str.to_s.split(",").map(&:strip) }.flatten.sort
         end
 
         def association?(key)
           reflections.keys.include?(key)
-        end
-
-        def composite_field(*values)
-          values.compact.join(".")
-        end
-
-        def nested_fields(fields)
-          array_fields(fields).map { |field| nested_field(field.split(".")) }.compact.uniq
         end
       end
     end
