@@ -29,6 +29,7 @@ module Fields
         def deep_errors(*association_keys)
           association_keys.inject(errors.to_h) do |error_tree, association_key|
             associate = send(association_key)
+            associate = associate.to_a if self.class.reflections[association_key.to_s].collection?
             error_tree.merge!(association_key => __associate_errors(associate))
           end
         end
@@ -42,8 +43,8 @@ module Fields
         #   {  "xxx-xxxxxxxx-xxx-xxxxxx" => { name: ["can't be blank"], age: ["can't be less than 18"] },
         #                            "0" => { name: ["can't be blank"], age: ["can't be less than 18"] },
         def __associate_errors(associate)
-          if associate.is_a?(ActiveRecord::Associations::CollectionProxy)
-            associate.map.with_index { |object, i| [object.id || i, object.errors.to_h] }.to_h
+          if associate.kind_of?(Array)
+            associate.to_a.map.with_index { |object, i| [object.id || i, object.errors.to_h] }.to_h
           else
             associate.errors.to_h
           end
