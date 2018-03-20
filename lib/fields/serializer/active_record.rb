@@ -1,13 +1,14 @@
 require 'active_record'
 require "active_model_serializers"
+require_relative 'active_record/errors'
 
 module Fields
   module Serializer
     module ActiveRecord
       extend ActiveSupport::Concern
+      include Errors
 
       class_methods do
-  
         # If key is an association of a given model class
         def association?(key)
           reflections.keys.include?(key.to_s)
