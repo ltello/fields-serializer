@@ -42,7 +42,7 @@ module Fields
         #   {  "xxx-xxxxxxxx-xxx-xxxxxx" => { name: ["can't be blank"], age: ["can't be less than 18"] },
         #                            "0" => { name: ["can't be blank"], age: ["can't be less than 18"] },
         def __associate_errors(associate)
-          if associate.is_a?(Array)
+          if associate.is_a?(ActiveRecord::Associations::CollectionProxy)
             associate.map.with_index { |object, i| [object.id || i, object.errors.to_h] }.to_h
           else
             associate.errors.to_h
