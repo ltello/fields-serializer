@@ -29,6 +29,7 @@ module Fields
         def deep_errors(*association_keys)
           association_keys.inject(errors.to_h) do |error_tree, association_key|
             associate = send(association_key)
+            next(error_tree) unless associate
             associate = associate.to_a if self.class.reflections[association_key.to_s].collection?
             error_tree.merge!(association_key => __associate_errors(associate))
           end
