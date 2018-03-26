@@ -37,18 +37,10 @@ module Fields
 
         private
 
-        # For single asssociated instance (has_one association):
-        #   { name: ["can't be blank"], age: ["can't be less than 18"] }
-        #
-        # For multiple asssociated instances (has_many association):
         #   {  "xxx-xxxxxxxx-xxx-xxxxxx" => { name: ["can't be blank"], age: ["can't be less than 18"] },
         #                            "0" => { name: ["can't be blank"], age: ["can't be less than 18"] },
         def __associate_errors(associate)
-          if associate.kind_of?(Array)
-            associate.to_a.map.with_index { |object, i| [object.id || i, object.errors.to_h] }.to_h
-          else
-            associate.errors.to_h
-          end
+          Array(associate).map.with_index { |object, i| [object.id || i, object.errors.to_h] }.to_h
         end
       end
     end
