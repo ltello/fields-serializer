@@ -16,7 +16,10 @@ module Fields
         fields      = options.delete(:fields)
         model_class = options.delete(:model_class)
         if fields.present?
-          query = query.includes(*model_class.fields_to_includes(fields)) if optimize_query
+          if optimize_query
+            includes = model_class.fields_to_includes(fields)
+            query    = query.includes(*includes)  if includes
+          end
           options.merge!(each_serializer: model_class.fields_serializer(fields), include: "**")
         end
         render options.merge!(json: query.to_a)
