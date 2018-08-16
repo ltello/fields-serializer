@@ -18,7 +18,7 @@ module Fields
         if fields.present?
           if optimize_query
             includes = model_class.fields_to_includes(fields)
-            query    = query.includes(*includes)  if includes
+            query    = query.includes(*Array.wrap(includes)) if includes
           end
           options.merge!(each_serializer: model_class.fields_serializer(fields), include: "**")
         end

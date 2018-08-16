@@ -1,6 +1,6 @@
-require 'active_record'
+require "active_record"
 require "active_model_serializers"
-require_relative 'active_record/errors'
+require_relative "active_record/errors"
 
 module Fields
   module Serializer
@@ -11,7 +11,7 @@ module Fields
       class_methods do
         # If key is an association of a given model class
         def association?(key)
-          reflections.keys.include?(key.to_s)
+          reflections.key?(key.to_s)
         end
 
         # Convert a list of fields (json_api notation) in a list of associations to be

@@ -1,8 +1,8 @@
 require "bundler/setup"
 require "fields/serializer"
-require 'factory_girl'
+require 'factory_bot'
 
-require 'simplecov'
+require "simplecov"
 SimpleCov.start
 
 RSpec.configure do |config|
@@ -16,8 +16,8 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
   config.before(:suite) do
-    FactoryGirl.find_definitions
+    FactoryBot.find_definitions
   end
 end

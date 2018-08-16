@@ -1,4 +1,4 @@
-require 'active_record'
+require "active_record"
 require "active_model_serializers"
 
 module Fields
@@ -13,12 +13,12 @@ module Fields
         @fields       = []
         @associations = {}
       end
-      
+
       # Self if any fields or associations. Nil otherwise
       def presence
         self if fields.present? || associations.present?
       end
-      
+
       # Adds a new field (json api notation) to the tree structure:
       #
       #   user_tree.notation
@@ -33,7 +33,7 @@ module Fields
         rest.present? ? add_association!(parent, rest) : add_field!(parent)
         self
       end
-      
+
       # Return the tree structure in Rails includes notation including both associations and fields
       #
       #   user_tree.notation
@@ -64,13 +64,13 @@ module Fields
         end.presence
         Array.wrap(to_includes).one? ? to_includes.first : to_includes
       end
-      
+
       def to_s
         notation.to_s
       end
-      
+
       private
-      
+
       def add_association!(parent, rest)
         existing_association?(parent) ? merge_association!(parent, rest) : append_association!(parent, rest)
       end
@@ -100,19 +100,19 @@ module Fields
       end
 
       def association?(value)
-        klass.reflections.keys.include?(value)
+        klass.reflections.key?(value)
       end
-      
+
       def associations_to_notation
         associations.inject({}) do |result, (k, v)|
           result.merge!(k => v.notation)
         end
       end
-      
+
       def existing_association?(value)
         !!associations[value]
       end
-      
+
       def existing_field?(value)
         fields.include?(value)
       end
